@@ -19,3 +19,30 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  
+  booking-api:
+    build: ./booking-api
+    ports:
+      - "5002:5002"
+    environment:
+      DATABASE_URL: postgresql://user:password@db:5432/sampledb
+      PORT: 5002
+    depends_on:
+      db:
+        condition: service_healthy
+
+  travel-api:
+    build: ./travel-api
+    environment:
+      BOOKING_API_URL: ${BOOKING_API_URL:-http://booking-api:5002}
+      PORT: 5001
+    depends_on:
+      - booking-api
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - travel-api
+
